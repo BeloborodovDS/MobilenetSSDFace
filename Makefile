@@ -9,6 +9,9 @@ fddb_dir := $(data_dir)/$(fddb_name)
 lmdb_pyscript := /opt/movidius/ssd-caffe/scripts/create_annoset.py
 caffe_exec := /opt/movidius/ssd-caffe/build/tools/caffe
 
+wider_train_id := 0B6eKvaijfFUDQUUwd21EckhUbWs
+wider_val_id := 0B6eKvaijfFUDd3dIRmpvSk8tLUk
+
 profile_initial:
 	cd models/ssd_voc_profile; \
 	mvNCProfile ../ssd_voc/deploy.prototxt -w ../ssd_voc/MobileNetSSD_deploy.caffemodel -s 12; \
@@ -21,6 +24,22 @@ profile_face:
 	cd models/ssd_face_pruned; \
 	mvNCProfile ./face_deploy.prototxt -w ../empty.caffemodel -s 12; \
 	cd ../..
+
+wider_load:
+	mkdir -p -v $(wider_dir) && cd $(wider_dir) && \
+	wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$(wider_train_id)" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt && \
+	wget --load-cookies cookies.txt "https://docs.google.com/uc?export=download&confirm=`cat confirm.txt`&id=$(wider_train_id)" -O WIDER_train.zip && \
+	wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$(wider_val_id)" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt && \
+	wget --load-cookies cookies.txt "https://docs.google.com/uc?export=download&confirm=`cat confirm.txt`&id=$(wider_val_id)" -O WIDER_val.zip && \
+	wget http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/support/bbx_annotation/wider_face_split.zip && \
+	rm -rf cookies.txt && rm -rf confirm.txt
+fddb_load:
+	mkdir -p -v $(fddb_dir) && cd $(fddb_dir) && \
+	wget http://tamaraberg.com/faceDataset/originalPics.tar.gz && \
+	wget http://vis-www.cs.umass.edu/fddb/FDDB-folds.tgz
+datasets:
+	cd $(wider_dir) && unzip -u WIDER_train && unzip -u WIDER_val && unzip -u wider_face_split && \
+	cd $(fddb_dir) && tar -xvzf originalPics.tar.gz && tar -xvzf FDDB-folds.tgz	
 
 wider_xml:
 	cd $(wider_dir) && \

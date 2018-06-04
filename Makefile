@@ -49,7 +49,7 @@ wider_xml:
 	mkdir -p -v xml && \
 	cd $(cur_dir) && \
 	python3 ./scripts/make_wider_xml.py $(wider_dir)/ WIDER_train/xml/ WIDER_val/xml/
-wider_lmdb:
+wider_lmdb: wider_xml
 	python3 $(lmdb_pyscript) --anno-type=detection --label-map-file=$(wider_dir)/labelmap.prototxt \
 	--min-dim=0 --max-dim=0 --resize-width=0 --resize-height=0 --check-label --encode-type=jpg --encoded \
 	--redo \
@@ -69,7 +69,7 @@ fddb_xml:
 	mkdir -p -v test && \
 	cd $(cur_dir) && \
 	python3 ./scripts/make_fddb_xml.py $(fddb_dir)/ xml/trainval/ xml/test/
-fddb_lmdb:
+fddb_lmdb: fddb_xml
 	python3 $(lmdb_pyscript) --anno-type=detection --label-map-file=$(fddb_dir)/labelmap.prototxt \
 	--min-dim=0 --max-dim=0 --resize-width=0 --resize-height=0 --check-label --encode-type=jpg --encoded \
 	--redo \
@@ -118,6 +118,8 @@ face_model: gen_templates
 
 train:
 	$(caffe_exec) train -solver solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel
+resume:
+	$(caffe_exec) train -solver solver_train.prototxt -snapshot `cat snapshot.txt`
 
 
 

@@ -6,12 +6,16 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 random.seed(42)
 
-def parse_wider(text, path, train_im_path, min_face=11):
+def parse_wider(text, path, train_im_path, min_face=6, min_ratio=0.02, max_blur=0, all_valid=True):
     """Parse WIDER annotations from text and images
     text: text annotations
     path: path to dataset
     min_face: discard faces smaller than this
-    Returns: [(filename, width, height, numchannels, [[x1,y1,x2,y1]...])...]"""
+    min_ratio: discard faces with ratio face_w/max(im_w, im_h) smaller than this
+    all_valid: if True, include image only if all faces are accepted
+    Returns: [(filename, width, height, numchannels, [[x1,y1,x2,y2]...])...]"""
+    total_faces = 0
+    total_ims = 0
     data = text.split('\n')
     data = [e for e in data if len(e)>0]
     i = 0
@@ -19,6 +23,7 @@ def parse_wider(text, path, train_im_path, min_face=11):
     while (i<len(data)):
         file = data[i]
         im = Image.open(path+train_im_path+file)
+        total_ims += 1
         check = True
         if im.bits!=8:
             print('Warning: image '+file+' data is '+str(im.bits)+'-bit, skipping')
@@ -35,17 +40,23 @@ def parse_wider(text, path, train_im_path, min_face=11):
         for j in range(num):
             face = data[i].split()
             face = [int(e) for e in face]
-            x,y,w,h = face[:4]
+            x,y,w,h,blur = face[:5]
             if w<h:
                 y += (h-w)//2
             else:
                 x += (w-h)//2
             w = min(w,h)
-            if w>=min_face:
+            ratio = w/max(width, height)
+            if (w>=min_face) and (ratio>=min_ratio) and (blur<=max_blur):
                 faces.append([x,y,x+w,y+w])
+            elif all_valid:
+                check = False
             i+=1
+        total_faces += len(faces)
         if (len(faces)>0) and check:
             res.append((train_im_path+file, width, height, channels, faces))
+    print('Total images: '+str(total_ims))
+    print('Total faces: '+str(total_faces))
     return res
 
 def write_xml_wider(data, path, xml_path, filename, write_sizes=True, shuffle=True, verbose=True):
@@ -101,7 +112,7 @@ def write_xml_wider(data, path, xml_path, filename, write_sizes=True, shuffle=Tr
             f.write(txt)
         cnt += 1
         if (cnt%1000==0) and verbose:
-            print(filename,': ',cnt,'of',len(data))
+            print(filename+': '+str(cnt)+' of '+str(len(data)))
  
 # create labelmap for face detection           
 def make_labelmap(path):
@@ -118,10 +129,7 @@ item {
     with open(path+'labelmap.prototxt', 'w') as f:
         f.write(txt)
   
-if __name__ == "__main__":      
-    #path = "/home/dmitrii/Work/Datasets/WIDERfacedet/"
-    #train_xml_path = "WIDER_train/xml/"
-    #test_xml_path = "WIDER_val/xml/" 
+if __name__ == "__main__":
     path = sys.argv[1] #dataset path
     train_xml_path = sys.argv[2] #xml subpath
     test_xml_path = sys.argv[3] #xml subpath
@@ -137,13 +145,22 @@ if __name__ == "__main__":
         test = f.read()
     
     print('Parsing WIDER dataset...')
-     
+    
+    print('Train:')
     train = parse_wider(train, path, train_im_path)
+    print('Accepted images: '+str(len(train)))
+    print('Accepted faces: '+str(sum([len(e[4]) for e in train])))    
+    
+    print('Test:')
     test = parse_wider(test, path, test_im_path)
+    print('Accepted images: '+str(len(test)))
+    print('Accepted faces: '+str(sum([len(e[4]) for e in test])))
     
     print('Creating .xml annotations and file lists...')
     
+    print('Train:')
     write_xml_wider(train, path, train_xml_path, 'trainval', write_sizes=False)
+    print('Test:')
     write_xml_wider(test, path, test_xml_path, 'test', shuffle=False)
     
     print('Done')

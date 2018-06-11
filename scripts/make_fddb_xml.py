@@ -6,12 +6,16 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 random.seed(42)
 
-def parse_fddb(text, path, min_face=11):
+def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True):
     """Parse FDDB annotations from text and images
     text: text annotations
     path: path to dataset
     min_face: discard faces smaller than this
-    Returns: [(filename, width, height, numchannels, [[x1,y1,x2,y1]...])...]"""
+    min_ratio: discard faces with ratio face_w/max(im_w, im_h) smaller than this
+    all_valid: if True, include image only if all faces are accepted
+    Returns: [(filename, width, height, numchannels, [[x1,y1,x2,y2]...])...]"""
+    total_faces = 0
+    total_ims = 0
     data = text.split('\n')
     data = [e for e in data if len(e)>0]
     i = 0
@@ -19,6 +23,7 @@ def parse_fddb(text, path, min_face=11):
     while (i<len(data)):
         file = data[i]
         im = Image.open(path+file+'.jpg')
+        total_ims += 1
         check = True
         if im.bits!=8:
             print('Warning: image '+file+' data is '+str(im.bits)+'-bit, skipping')
@@ -39,11 +44,17 @@ def parse_fddb(text, path, min_face=11):
             w = 2*rmin
             x = cx-rmin
             y = cy-rmin
-            if w>=min_face:
+            ratio = w/max(width, height)
+            if (w>=min_face) and (ratio>=min_ratio):
                 faces.append([x,y,x+w,y+w])
+            elif all_valid:
+                check = False
             i+=1
+        total_faces += len(faces)
         if (len(faces)>0) and check:
             res.append((file+'.jpg', width, height, channels, faces))
+    print('Total images: '+str(total_ims))
+    print('Total faces: '+str(total_faces))
     return res
 
 def write_xml_fddb(data, path, xml_path, filename, write_sizes=True, shuffle=True, verbose=True):
@@ -99,7 +110,7 @@ def write_xml_fddb(data, path, xml_path, filename, write_sizes=True, shuffle=Tru
             f.write(txt)
         cnt += 1
         if (cnt%1000==0) and verbose:
-            print(filename,': ',cnt,'of',len(data))
+            print(filename+': '+str(cnt)+' of '+str(len(data)))
 
 # create labelmap for face detection            
 def make_labelmap(path):
@@ -121,32 +132,39 @@ if __name__ == "__main__":
     train_xml_path = sys.argv[2] #xml subpath
     test_xml_path = sys.argv[3] #xml subpath
     
-    train_folds = ['01','02','03','04','06','07','08','09']
-    test_folds = ['05','10']
+    train_folds = ['01','02','03','04','05','06','07','08','09']
+    test_folds = ['10']
     
     make_labelmap(fddb_path)
     
     print('Parsing FDDB dataset...')
     
     #concat data from all folds and parse
+    print('Train:')
     train_fddb = ''
     for fld in train_folds:
         with open(fddb_path+'/FDDB-folds/FDDB-fold-'+fld+'-ellipseList.txt') as f:
             data = f.read()
             train_fddb = train_fddb+data
     train_fddb = parse_fddb(train_fddb, fddb_path)
+    print('Accepted images: '+str(len(train_fddb)))
+    print('Accepted faces: '+str(sum([len(e[4]) for e in train_fddb])))
     
+    print('Test:')
     test_fddb = ''
     for fld in test_folds:
         with open(fddb_path+'/FDDB-folds/FDDB-fold-'+fld+'-ellipseList.txt') as f:
             data = f.read()
             test_fddb = test_fddb+data
     test_fddb = parse_fddb(test_fddb, fddb_path)
+    print('Accepted images: '+str(len(test_fddb)))
+    print('Accepted faces: '+str(sum([len(e[4]) for e in test_fddb])))
     
     print('Creating .xml annotations and file lists...')
     
+    print('Train:')
     write_xml_fddb(train_fddb, fddb_path, train_xml_path, 'trainval', write_sizes=False)
-    print('test :')
+    print('Test:')
     write_xml_fddb(test_fddb,  fddb_path, test_xml_path,  'test',     shuffle=False)
     
     print('Done')

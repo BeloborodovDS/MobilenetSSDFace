@@ -37,6 +37,7 @@ def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True):
         num = int(data[i])
         i+=1
         faces = []
+        total_faces += num
         for j in range(num):
             face = data[i].split()
             face = [int(float(e)) for e in face if len(e)>0]
@@ -50,7 +51,6 @@ def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True):
             elif all_valid:
                 check = False
             i+=1
-        total_faces += len(faces)
         if (len(faces)>0) and check:
             res.append((file+'.jpg', width, height, channels, faces))
     print('Total images: '+str(total_ims))

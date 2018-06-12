@@ -117,9 +117,9 @@ face_model: gen_templates
 	python3 ./scripts/check_face_model.py
 
 train:
-	$(caffe_exec) train -solver solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel
+	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel
 resume:
-	$(caffe_exec) train -solver solver_train.prototxt -snapshot `cat snapshot.txt`
+	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt`
 
 
 

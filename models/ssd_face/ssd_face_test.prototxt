@@ -2458,8 +2458,8 @@ layer {
   bottom: "data"
   top: "conv11_mbox_priorbox"
   prior_box_param {
-    min_size: 6.0
-    max_size: 55.8
+    min_size: 16.0
+    max_size: 32.0
     flip: true
     clip: false
     variance: 0.1
@@ -2568,8 +2568,8 @@ layer {
   bottom: "data"
   top: "conv13_mbox_priorbox"
   prior_box_param {
-    min_size: 55.8
-    max_size: 105.6
+    min_size: 32.0
+    max_size: 64.0
     flip: true
     clip: false
     variance: 0.1
@@ -2678,8 +2678,8 @@ layer {
   bottom: "data"
   top: "conv14_2_mbox_priorbox"
   prior_box_param {
-    min_size: 105.6
-    max_size: 155.4
+    min_size: 64.0
+    max_size: 128.0
     flip: true
     clip: false
     variance: 0.1
@@ -2788,8 +2788,8 @@ layer {
   bottom: "data"
   top: "conv15_2_mbox_priorbox"
   prior_box_param {
-    min_size: 155.4
-    max_size: 205.2
+    min_size: 128.0
+    max_size: 214.0
     flip: true
     clip: false
     variance: 0.1
@@ -2898,8 +2898,8 @@ layer {
   bottom: "data"
   top: "conv16_2_mbox_priorbox"
   prior_box_param {
-    min_size: 205.2
-    max_size: 255.0
+    min_size: 214.0
+    max_size: 300.0
     flip: true
     clip: false
     variance: 0.1
@@ -3008,7 +3008,7 @@ layer {
   bottom: "data"
   top: "conv17_2_mbox_priorbox"
   prior_box_param {
-    min_size: 255.0
+    min_size: 214.0
     max_size: 300.0
     flip: true
     clip: false

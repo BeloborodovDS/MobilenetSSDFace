@@ -8,7 +8,7 @@ class Generator():
       #self.anchors = create_ssd_anchors()
       #self.anchors = create_ssd_anchors(min_scale=0.02, max_scale=0.85)
       anchors = [(16,32),(32,64),(64,128),(128,214),(214,300),(214,300)]
-      self.anchors = [(u/300,v/300) for u,v in anchors]
+      self.anchors = [(u/300.0,v/300.0) for u,v in anchors]
       self.last = "data"
 
     def header(self, name):

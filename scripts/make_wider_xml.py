@@ -47,7 +47,7 @@ def parse_wider(text, path, train_im_path, min_face=6, min_ratio=0.02, max_blur=
             else:
                 x += (w-h)//2
             w = min(w,h)
-            ratio = w/max(width, height)
+            ratio = 1.0*w/max(width, height)
             if (w>=min_face) and (ratio>=min_ratio) and (blur<=max_blur):
                 faces.append([x,y,x+w,y+w])
             elif all_valid:

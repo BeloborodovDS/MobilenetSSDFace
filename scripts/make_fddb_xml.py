@@ -45,7 +45,7 @@ def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True):
             w = 2*rmin
             x = cx-rmin
             y = cy-rmin
-            ratio = w/max(width, height)
+            ratio = 1.0*w/max(width, height)
             if (w>=min_face) and (ratio>=min_ratio):
                 faces.append([x,y,x+w,y+w])
             elif all_valid:

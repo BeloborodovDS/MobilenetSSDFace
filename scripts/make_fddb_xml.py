@@ -6,13 +6,15 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 random.seed(42)
 
-def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True):
+def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True, 
+               min_im_ratio=0.5, max_im_ratio=2.0):
     """Parse FDDB annotations from text and images
     text: text annotations
     path: path to dataset
     min_face: discard faces smaller than this
     min_ratio: discard faces with ratio face_w/max(im_w, im_h) smaller than this
     all_valid: if True, include image only if all faces are accepted
+    min_im_ratio, max_im_ratio: reject images with width/height outside this range
     Returns: [(filename, width, height, numchannels, [[x1,y1,x2,y2]...])...]"""
     total_faces = 0
     total_ims = 0
@@ -38,6 +40,9 @@ def parse_fddb(text, path, min_face=6, min_ratio=0.02, all_valid=True):
         i+=1
         faces = []
         total_faces += num
+        im_ratio = 1.0*width/height
+        if (im_ratio<min_im_ratio) or (im_ratio>max_im_ratio):
+            check = False
         for j in range(num):
             face = data[i].split()
             face = [int(float(e)) for e in face if len(e)>0]

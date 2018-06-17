@@ -17,6 +17,10 @@ def transform_input(img, transpose=True, dtype=np.float32):
     return inpt
     
 def transform_output(img, output):
+    """Extract bbox info from NN output
+    img: original image
+    output: NN output
+    returns: boxes(list of array[4]), classes(list of int), confidence(list of float)"""
     h,w = img.shape[:2] 
     boxes = (output['detection_out'][0,0,:,3:7] * np.array([w, h, w, h])).astype(int)
     classes = output['detection_out'][0,0,:,1].astype(int)
@@ -26,6 +30,7 @@ def transform_output(img, output):
     return boxes, classes, confidence
 
 if __name__ == "__main__":
+    # Test Net on several images from images/input, draw bboxes, save to images/output
     path = 'images/input/' 
     save_path = 'images/output/'
     weights = sys.argv[1]

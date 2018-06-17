@@ -1,0 +1,1 @@
+snapshots/adjusted_iter_11000.caffemodel

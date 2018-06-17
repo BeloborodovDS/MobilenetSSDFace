@@ -120,6 +120,8 @@ train:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel
 resume:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt`
+test:
+	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights `cat train_files/weights.txt`
 
 
 

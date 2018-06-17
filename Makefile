@@ -121,6 +121,11 @@ train:
 resume:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt`
 test:
+	mkdir -p models/tmp && mkdir -p images/output && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt `cat train_files/weights.txt` \
+	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
+	python3 scripts/test_on_examples.py `cat train_files/weights.txt`; \
+	echo "-------------------------------------------------------------"; \
 	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights `cat train_files/weights.txt`
 
 

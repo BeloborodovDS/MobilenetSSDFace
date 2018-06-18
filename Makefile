@@ -117,16 +117,21 @@ face_model: gen_templates
 	python3 ./scripts/check_face_model.py
 
 train:
-	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel
+	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \
+	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
 resume:
-	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt`
+	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt` 2>&1 | \
+	tee -a `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
 test:
 	mkdir -p models/tmp && mkdir -p images/output && \
 	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt `cat train_files/weights.txt` \
 	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
-	python3 scripts/test_on_examples.py `cat train_files/weights.txt`; \
-	echo "-------------------------------------------------------------"; \
-	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights `cat train_files/weights.txt`
+	python3 scripts/test_on_examples.py `cat train_files/weights.txt` && \
+	echo "\n\nmAP:" && \
+	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights `cat train_files/weights.txt` 2>&1 | \
+	grep -o "Test net output .* = [0-9]*\.[0-9]*"
+plot_loss:
+	python3 scripts/plot_loss.py
 
 
 

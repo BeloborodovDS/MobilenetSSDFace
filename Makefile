@@ -132,6 +132,8 @@ test:
 	grep -o "Test net output .* = [0-9]*\.[0-9]*"
 plot_loss:
 	python3 scripts/plot_loss.py
+plot_map:
+	python3 scripts/plot_map.py
 
 
 

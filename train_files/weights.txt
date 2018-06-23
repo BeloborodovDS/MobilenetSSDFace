@@ -1,1 +1,1 @@
-snapshots/adj0001_iter_11000.caffemodel
+snapshots/lr1e3_iter_7000.caffemodel

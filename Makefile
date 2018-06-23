@@ -119,6 +119,9 @@ face_model: gen_templates
 train:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \
 	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
+train_noinit:
+	$(caffe_exec) train -solver train_files/solver_train.prototxt 2>&1 | \
+	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
 resume:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt` 2>&1 | \
 	tee -a `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt

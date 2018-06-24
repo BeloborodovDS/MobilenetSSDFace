@@ -115,10 +115,15 @@ gen_templates:
 face_model: gen_templates
 	python3 ./scripts/make_face_model.py 50; \
 	python3 ./scripts/check_face_model.py
+face_model_full: gen_templates
+	python3 ./scripts/make_face_model_full.py
 
 train:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \
 	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
+train_full:
+	$(caffe_exec) train -solver train_files/solver_train_full.prototxt -weights models/ssd_face/face_init_full.caffemodel 2>&1 | \
+	tee `cat train_files/solver_train_full.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
 train_noinit:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt 2>&1 | \
 	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt

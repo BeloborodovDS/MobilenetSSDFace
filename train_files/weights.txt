@@ -1,1 +1,1 @@
-snapshots/lr1e3_iter_7000.caffemodel
+snapshots/lr1e3noinit_iter_7000.caffemodel

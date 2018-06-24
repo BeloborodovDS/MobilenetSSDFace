@@ -46,7 +46,7 @@ layer {
     }
   }
   data_param {
-    source: "/home/dmitrii/Work/Projects/FaceCaffe/data/wider_fddb_test_lmdb/"
+    source: "data/wider_fddb_test_lmdb/"
     batch_size: 24
     backend: LMDB
   }

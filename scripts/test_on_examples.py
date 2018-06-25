@@ -33,10 +33,9 @@ if __name__ == "__main__":
     # Test Net on several images from images/input, draw bboxes, save to images/output
     path = 'images/input/' 
     save_path = 'images/output/'
-    weights = sys.argv[1]
+    proto = sys.argv[1]    
     
-    net = caffe.Net('models/ssd_face_pruned/face_deploy.prototxt', 
-    'models/tmp/test.caffemodel', caffe.TEST)
+    net = caffe.Net(proto, 'models/tmp/test.caffemodel', caffe.TEST)
     
     print('OK')
     

@@ -1,6 +1,8 @@
 import subprocess
-import os
+import os, sys
 from matplotlib import pyplot as plt
+
+solver = sys.argv[1]
 
 files = os.listdir('snapshots')
 with open('train_files/weights.txt') as f:
@@ -21,7 +23,8 @@ maps = []
 
 for fn, it in fi:
     print(fn)
-    command = caf + ' train -solver train_files/solver_test.prototxt -weights snapshots/'+fn
+    command = caf + ' train -solver ' + solver + ' -weights snapshots/' + fn
+    #command = caf + ' train -solver train_files/solver_test.prototxt -weights snapshots/'+fn
     #command = caf + ' test -model models/ssd_face_pruned/face_test.prototxt -weights snapshots/'+fn+' -iterations 200'
     stdout, stderr = subprocess.Popen(command.split(), 
                                      stdout=subprocess.PIPE, 

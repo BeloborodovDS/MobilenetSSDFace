@@ -121,9 +121,6 @@ face_model_full: gen_templates
 train:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \
 	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
-train_full:
-	$(caffe_exec) train -solver train_files/solver_train_full.prototxt -weights models/ssd_face/face_init_full.caffemodel 2>&1 | \
-	tee `cat train_files/solver_train_full.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
 train_noinit:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt 2>&1 | \
 	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
@@ -134,14 +131,32 @@ test:
 	mkdir -p models/tmp && mkdir -p images/output && \
 	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt `cat train_files/weights.txt` \
 	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
-	python3 scripts/test_on_examples.py `cat train_files/weights.txt` && \
-	echo "\n\nmAP:" && \
+	python3 scripts/test_on_examples.py models/ssd_face_pruned/face_deploy.prototxt && \
+	cat train_files/weights.txt && echo "\n\nmAP:" && \
 	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights `cat train_files/weights.txt` 2>&1 | \
 	grep -o "Test net output .* = [0-9]*\.[0-9]*"
+
+train_full:
+	$(caffe_exec) train -solver train_files/solver_train_full.prototxt -weights models/ssd_face/face_init_full.caffemodel 2>&1 | \
+	tee `cat train_files/solver_train_full.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
+resume_full:
+	$(caffe_exec) train -solver train_files/solver_train_full.prototxt -snapshot `cat train_files/snapshot.txt` 2>&1 | \
+	tee -a `cat train_files/solver_train_full.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
+test_full:
+	mkdir -p models/tmp && mkdir -p images/output && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt `cat train_files/weights.txt` \
+	models/ssd_face/ssd_face_deploy.prototxt models/tmp/test.caffemodel && \
+	python3 scripts/test_on_examples.py models/ssd_face/ssd_face_deploy.prototxt && \
+	cat train_files/weights.txt && echo "\n\nmAP:" && \
+	$(caffe_exec) train -solver train_files/solver_test_full.prototxt -weights `cat train_files/weights.txt` 2>&1 | \
+	grep -o "Test net output .* = [0-9]*\.[0-9]*"
+
 plot_loss:
 	python3 scripts/plot_loss.py
 plot_map:
-	python3 scripts/plot_map.py
+	python3 scripts/plot_map.py train_files/solver_test.prototxt
+plot_map_full:
+	python3 scripts/plot_map.py train_files/solver_test_full.prototxt
 
 
 

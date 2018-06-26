@@ -10,6 +10,15 @@ with open('train_files/weights.txt') as f:
 snapshot = snapshot.split('/')[-1]
 snapshot = '_'.join(snapshot.split('_')[:-2])
 
+old_cache = {}
+if snapshot+'_cache.txt' in files:
+    with open('snapshots/'+snapshot+'_cache.txt') as f:
+        t = f.read().strip('\n').split('\n')
+        t = [e.split(':') for e in t]
+        t = [(int(e[0]),float(e[1])) for e in t]
+        old_cache.update(t)
+cache = {}
+
 with open('Makefile') as f:
     caf = f.read().split('\n')
 caf = [e for e in caf if e.startswith('caffe_exec := ')][0]
@@ -23,18 +32,28 @@ maps = []
 
 for fn, it in fi:
     print(fn)
-    command = caf + ' train -solver ' + solver + ' -weights snapshots/' + fn
-    #command = caf + ' train -solver train_files/solver_test.prototxt -weights snapshots/'+fn
-    #command = caf + ' test -model models/ssd_face_pruned/face_test.prototxt -weights snapshots/'+fn+' -iterations 200'
-    stdout, stderr = subprocess.Popen(command.split(), 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE, 
-                                     stdin=subprocess.PIPE).communicate()
-    res = [e for e in stderr.decode('utf-8').split('\n') if 'Test net output ' in e]
-    res = [e[e.find(']')+1:] for e in res]
-    val = float(res[0].split()[-1])
+    if it in old_cache:
+        val = old_cache[it]
+        print('\t(cached)\t'+str(val))
+    else:
+        command = caf + ' train -solver ' + solver + ' -weights snapshots/' + fn
+        #command = caf + ' train -solver train_files/solver_test.prototxt -weights snapshots/'+fn
+        #command = caf + ' test -model models/ssd_face_pruned/face_test.prototxt -weights snapshots/'+fn+' -iterations 200'
+        stdout, stderr = subprocess.Popen(command.split(), 
+                                         stdout=subprocess.PIPE, 
+                                         stderr=subprocess.PIPE, 
+                                         stdin=subprocess.PIPE).communicate()
+        res = [e for e in stderr.decode('utf-8').split('\n') if 'Test net output ' in e]
+        res = [e[e.find(']')+1:] for e in res]
+        val = float(res[0].split()[-1])
+        print('\n'.join(res))
     maps.append(val)
-    print('\n'.join(res))
+    cache[it] = val
+    
+cache = [str(k)+':'+str(v) for k,v in cache.items()]
+cache = '\n'.join(cache) 
+with open('snapshots/'+snapshot+'_cache.txt', 'w') as f:
+    f.write(cache)
     
 plt.plot(iters, maps, 'b-')
 plt.xlabel('Iteration')

@@ -23,3 +23,5 @@ for ln in new_net.params.keys():
         print('Skipping')
 
 new_net.save('models/ssd_face/face_init_full.caffemodel')
+
+print('Model complete')

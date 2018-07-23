@@ -44,9 +44,13 @@ for fn, it in fi:
                                          stderr=subprocess.PIPE, 
                                          stdin=subprocess.PIPE).communicate()
         res = [e for e in stderr.decode('utf-8').split('\n') if 'Test net output ' in e]
-        res = [e[e.find(']')+1:] for e in res]
-        val = float(res[0].split()[-1])
-        print('\n'.join(res))
+        if len(res)>0:
+            res = [e[e.find(']')+1:] for e in res]
+            val = float(res[0].split()[-1])
+            print('\n'.join(res))
+        else:
+            val = 0
+            print('No detections, mAP = 0')
     maps.append(val)
     cache[it] = val
     
@@ -55,7 +59,7 @@ cache = '\n'.join(cache)
 with open('snapshots/'+snapshot+'_cache.txt', 'w') as f:
     f.write(cache)
     
-plt.plot(iters, maps, 'b-')
+plt.plot(iters, maps, 'bx-')
 plt.xlabel('Iteration')
 plt.ylabel('mAP')
 plt.title(snapshot)

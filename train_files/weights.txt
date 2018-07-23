@@ -1,1 +1,1 @@
-snapshots/full_iter_6500.caffemodel
+snapshots/l1lrtest_iter_1700.caffemodel

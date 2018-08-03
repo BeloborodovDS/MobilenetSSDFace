@@ -24,6 +24,20 @@ profile_face:
 	cd models/ssd_face_pruned; \
 	mvNCProfile ./face_deploy.prototxt -w ../empty.caffemodel -s 12; \
 	cd ../..
+profile_face_full:
+	mkdir -p models/tmp && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt models/ssd_face/best_bn_full.caffemodel \
+	models/ssd_face/ssd_face_deploy.prototxt models/tmp/test.caffemodel && \
+	cd models/tmp; \
+	mvNCProfile ../ssd_face/ssd_face_deploy.prototxt -w ./test.caffemodel -s 12; \
+	cd ../..
+profile_short_init:
+	mkdir -p models/tmp && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt models/ssd_face_pruned/short_init.caffemodel \
+	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
+	cd models/tmp; \
+	mvNCProfile ../ssd_face_pruned/face_deploy.prototxt -w ./test.caffemodel -s 12; \
+	cd ../..
 
 wider_load:
 	mkdir -p -v $(wider_dir) && cd $(wider_dir) && \
@@ -117,6 +131,8 @@ face_model: gen_templates
 	python3 ./scripts/check_face_model.py
 face_model_full: gen_templates
 	python3 ./scripts/make_face_model_full.py
+face_model_pruned:
+	python3 ./scripts/make_face_model_pruned.py
 
 train:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \
@@ -149,6 +165,23 @@ test_full:
 	python3 scripts/test_on_examples.py models/ssd_face/ssd_face_deploy.prototxt && \
 	cat train_files/weights.txt && echo "\n\nmAP:" && \
 	$(caffe_exec) train -solver train_files/solver_test_full.prototxt -weights `cat train_files/weights.txt` 2>&1 | \
+	grep -o "Test net output .* = [0-9]*\.[0-9]*"
+
+test_best_full:
+	mkdir -p models/tmp && mkdir -p images/output && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt models/ssd_face/best_bn_full.caffemodel \
+	models/ssd_face/ssd_face_deploy.prototxt models/tmp/test.caffemodel && \
+	python3 scripts/test_on_examples.py models/ssd_face/ssd_face_deploy.prototxt && \
+	echo "models/ssd_face/best_bn_full.caffemodel \n\nmAP:" && \
+	$(caffe_exec) train -solver train_files/solver_test_full.prototxt -weights models/ssd_face/best_bn_full.caffemodel 2>&1 | \
+	grep -o "Test net output .* = [0-9]*\.[0-9]*"
+test_short_init:	
+	mkdir -p models/tmp && mkdir -p images/output && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt models/ssd_face_pruned/short_init.caffemodel \
+	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
+	python3 scripts/test_on_examples.py models/ssd_face_pruned/face_deploy.prototxt && \
+	echo "models/ssd_face_pruned/short_init.caffemodel \n\nmAP:" && \
+	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights models/ssd_face_pruned/short_init.caffemodel 2>&1 | \
 	grep -o "Test net output .* = [0-9]*\.[0-9]*"
 
 plot_loss:

@@ -107,7 +107,7 @@ input_shape {
       sampler {
         min_scale: 0.1
         max_scale: 1.0
-        min_aspect_ratio: 0.7
+        min_aspect_ratio: 1
         max_aspect_ratio: 1.4
       }
       sample_constraint {
@@ -120,7 +120,7 @@ input_shape {
       sampler {
         min_scale: 0.1
         max_scale: 1.0
-        min_aspect_ratio: 0.7
+        min_aspect_ratio: 1
         max_aspect_ratio: 1.4
       }
       sample_constraint {
@@ -133,7 +133,7 @@ input_shape {
       sampler {
         min_scale: 0.1
         max_scale: 1.0
-        min_aspect_ratio: 0.7
+        min_aspect_ratio: 1
         max_aspect_ratio: 1.4
       }
       sample_constraint {
@@ -146,7 +146,7 @@ input_shape {
       sampler {
         min_scale: 0.1
         max_scale: 1.0
-        min_aspect_ratio: 0.7
+        min_aspect_ratio: 1
         max_aspect_ratio: 1.4
       }
       sample_constraint {
@@ -159,7 +159,7 @@ input_shape {
       sampler {
         min_scale: 0.1
         max_scale: 1.0
-        min_aspect_ratio: 0.7
+        min_aspect_ratio: 1
         max_aspect_ratio: 1.4
       }
       sample_constraint {
@@ -172,7 +172,7 @@ input_shape {
       sampler {
         min_scale: 0.1
         max_scale: 1.0
-        min_aspect_ratio: 0.7
+        min_aspect_ratio: 1
         max_aspect_ratio: 1.4
       }
       sample_constraint {

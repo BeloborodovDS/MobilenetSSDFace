@@ -12,6 +12,7 @@ caffe_exec := /opt/movidius/ssd-caffe/build/tools/caffe
 wider_train_id := 0B6eKvaijfFUDQUUwd21EckhUbWs
 wider_val_id := 0B6eKvaijfFUDd3dIRmpvSk8tLUk
 
+# Models PROFILING and COMPILING
 profile_initial:
 	cd models/ssd_voc_profile; \
 	mvNCProfile ../ssd_voc/deploy.prototxt -w ../ssd_voc/MobileNetSSD_deploy.caffemodel -s 12; \
@@ -19,10 +20,6 @@ profile_initial:
 compile_initial:
 	cd models/ssd_voc_profile; \
 	mvNCCompile ../ssd_voc/deploy.prototxt -w ../ssd_voc/MobileNetSSD_deploy.caffemodel -s 12; \
-	cd ../..
-profile_face:
-	cd models/ssd_face_pruned; \
-	mvNCProfile ./face_deploy.prototxt -w ../empty.caffemodel -s 12; \
 	cd ../..
 profile_face_full:
 	mkdir -p models/tmp && \
@@ -39,6 +36,8 @@ profile_short_init:
 	mvNCProfile ../ssd_face_pruned/face_deploy.prototxt -w ./test.caffemodel -s 12; \
 	cd ../..
 
+# Load, convert and merge DATASETS
+# load
 wider_load:
 	mkdir -p -v $(wider_dir) && cd $(wider_dir) && \
 	wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$(wider_train_id)" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt && \
@@ -54,7 +53,7 @@ fddb_load:
 datasets:
 	cd $(wider_dir) && unzip -u WIDER_train && unzip -u WIDER_val && unzip -u wider_face_split && \
 	cd $(fddb_dir) && tar -xvzf originalPics.tar.gz && tar -xvzf FDDB-folds.tgz	
-
+# WIDER
 wider_xml:
 	cd $(wider_dir) && \
 	cd WIDER_train && \
@@ -74,7 +73,7 @@ wider_lmdb: wider_xml
 	--redo \
 	$(wider_dir) $(wider_dir)/test.txt $(wider_dir)/WIDER_val/lmdb/wider_test_lmdb \
 	./data \
-
+# FDDB
 fddb_xml:
 	cd $(fddb_dir) && \
 	mkdir -p -v xml && \
@@ -94,7 +93,7 @@ fddb_lmdb: fddb_xml
 	--redo \
 	$(fddb_dir) $(fddb_dir)/test.txt $(fddb_dir)/lmdb/fddb_test_lmdb \
 	./data \
-
+# both
 merge_datasets: 
 	cd $(data_dir) && \
 	mkdir -p -v $(combine_name) && \
@@ -115,6 +114,7 @@ lmdb: wider_xml fddb_xml merge_datasets
 	$(data_dir)/$(combine_name)/lmdb/wider_fddb_test_lmdb \
 	./data \
 
+# GENERATE MODELS
 gen_templates:
 	python3 ./models/ssd_voc/gen.py --stage=train --lmdb=$(cur_dir)/data/wider_fddb_train_lmdb/ \
 	--label-map=$(cur_dir)/models/labelmap.prototxt --class-num=2 \
@@ -124,11 +124,7 @@ gen_templates:
 	> models/ssd_face/ssd_face_test.prototxt; \
 	python3 ./models/ssd_voc/gen.py --stage=deploy --class-num=2 \
 	> models/ssd_face/ssd_face_deploy.prototxt; \
-	python3 ./scripts/check_proto.py 
-
-face_model: gen_templates
-	python3 ./scripts/make_face_model.py 50; \
-	python3 ./scripts/check_face_model.py
+	python3 ./scripts/check_proto.py
 face_model_full: gen_templates
 	python3 ./scripts/make_face_model_full.py
 face_model_pruned:
@@ -136,24 +132,7 @@ face_model_pruned:
 face_model_short:
 	python3 ./scripts/make_face_model_short.py 
 
-train:
-	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \
-	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
-train_noinit:
-	$(caffe_exec) train -solver train_files/solver_train.prototxt 2>&1 | \
-	tee `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
-resume:
-	$(caffe_exec) train -solver train_files/solver_train.prototxt -snapshot `cat train_files/snapshot.txt` 2>&1 | \
-	tee -a `cat train_files/solver_train.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
-test:
-	mkdir -p models/tmp && mkdir -p images/output && \
-	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt `cat train_files/weights.txt` \
-	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
-	python3 scripts/test_on_examples.py models/ssd_face_pruned/face_deploy.prototxt && \
-	cat train_files/weights.txt && echo "\n\nmAP:" && \
-	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights `cat train_files/weights.txt` 2>&1 | \
-	grep -o "Test net output .* = [0-9]*\.[0-9]*"
-
+# TRAIN, TEST
 train_full:
 	$(caffe_exec) train -solver train_files/solver_train_full.prototxt -weights models/ssd_face/face_init_full.caffemodel 2>&1 | \
 	tee `cat train_files/solver_train_full.prototxt | grep snapshot_prefix | grep -o \".* | tr -d \"`_log.txt
@@ -168,7 +147,6 @@ test_full:
 	cat train_files/weights.txt && echo "\n\nmAP:" && \
 	$(caffe_exec) train -solver train_files/solver_test_full.prototxt -weights `cat train_files/weights.txt` 2>&1 | \
 	grep -o "Test net output .* = [0-9]*\.[0-9]*"
-
 test_best_full:
 	mkdir -p models/tmp && mkdir -p images/output && \
 	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt models/ssd_face/best_bn_full.caffemodel \
@@ -186,6 +164,7 @@ test_short_init:
 	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights models/ssd_face_pruned/short_init.caffemodel 2>&1 | \
 	grep -o "Test net output .* = [0-9]*\.[0-9]*"
 
+# PLOT log data and test results
 plot_loss:
 	python3 scripts/plot_loss.py
 plot_map:

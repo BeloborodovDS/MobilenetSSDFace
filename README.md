@@ -76,7 +76,9 @@ make profile_short_init
 
 
 Also see Caffe_face.ipynb for details.
+
 See images/output to see how nets perform on examples (test network to get these results).
+
 See <a href="https://drive.google.com/file/d/1LExcFZO8vN46xrJ8deG159eIUaW0kB-H/view?usp=sharing" target="_blank">this notebook</a> for training this model in Google Colaboratory.
 
 

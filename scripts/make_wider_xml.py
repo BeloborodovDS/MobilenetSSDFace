@@ -7,7 +7,7 @@ from xml.dom import minidom
 random.seed(42)
 
 def parse_wider(text, path, train_im_path, min_face=6, min_ratio=0.02, max_blur=0, all_valid=True, 
-                min_im_ratio=1, max_im_ratio=2.0):
+                min_im_ratio=0.5, max_im_ratio=2.0):
     """Parse WIDER annotations from text and images
     text: text annotations
     path: path to dataset

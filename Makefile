@@ -133,6 +133,8 @@ face_model_full: gen_templates
 	python3 ./scripts/make_face_model_full.py
 face_model_pruned:
 	python3 ./scripts/make_face_model_pruned.py
+face_model_short:
+	python3 ./scripts/make_face_model_short.py 
 
 train:
 	$(caffe_exec) train -solver train_files/solver_train.prototxt -weights models/ssd_face_pruned/face_init.caffemodel 2>&1 | \

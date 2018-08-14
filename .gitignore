@@ -15,4 +15,4 @@ models/ssd_voc_profile/
 models/tmp/
 scripts/__pycache__/
 snapshots/
-
+models/deploy/

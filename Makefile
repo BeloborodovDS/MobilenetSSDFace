@@ -164,6 +164,22 @@ test_short_init:
 	$(caffe_exec) train -solver train_files/solver_test.prototxt -weights models/ssd_face_pruned/short_init.caffemodel 2>&1 | \
 	grep -o "Test net output .* = [0-9]*\.[0-9]*"
 
+# DEPLOY models
+deploy_full:
+	mkdir -p models/deploy && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt models/ssd_face/best_bn_full.caffemodel \
+	models/ssd_face/ssd_face_deploy.prototxt models/deploy/ssd-face.caffemodel && \
+	cp -u -v models/ssd_face/ssd_face_deploy.prototxt models/deploy/ssd-face.prototxt && \
+	cd models/deploy && mvNCCompile ssd-face.prototxt -w ssd-face.caffemodel -s 12 -o ssd-face.graph && cd ../..
+deploy_short:
+	mkdir -p models/deploy && \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt models/ssd_face_pruned/short_init.caffemodel \
+	models/ssd_face_pruned/face_deploy.prototxt models/deploy/ssd-face-longrange.caffemodel && \
+	cp -u -v models/ssd_face_pruned/face_deploy.prototxt models/deploy/ssd-face-longrange.prototxt && \
+	cd models/deploy && \
+	mvNCCompile ssd-face-longrange.prototxt -w ssd-face-longrange.caffemodel -s 12 -o ssd-face-longrange.graph \
+	&& cd ../..
+
 # PLOT log data and test results
 plot_loss:
 	python3 scripts/plot_loss.py

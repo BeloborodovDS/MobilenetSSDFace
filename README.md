@@ -28,6 +28,8 @@ or
 make compile_short
 ~~~
 
+Deployment models are placed in models/deploy.
+
 ## Training
 
 To train this detector (<a href="https://github.com/weiliu89/caffe/tree/ssd" target="_blank">SSD-Caffe</a> is needed):

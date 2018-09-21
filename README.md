@@ -2,6 +2,34 @@
 
 This repo contains code for Mobilenet+SSD face detector training. This detector is compatible with Movidius Neural Compute Stick. You need <a href="https://github.com/movidius/ncsdk" target="_blank">NCSDK</a> to test it with Neural Compute Stick.
 
+## Deploying models for Caffe and Neural Compute Stick
+
+You can deploy two different SSD face detectors: "full" detector or "short" detector. The latter is shortened: layers 14-17 are deleted. It is a bit faster (67 ms vs 75 ms) and captures small faces only.
+
+To deploy detectors to Caffe:
+~~~
+make deploy_full
+~~~
+
+or
+
+~~~
+make deploy_short
+~~~
+
+To deploy detectors to NCS (and Caffe):
+~~~
+make compile_full
+~~~
+
+or
+
+~~~
+make compile_short
+~~~
+
+## Training
+
 To train this detector (<a href="https://github.com/weiliu89/caffe/tree/ssd" target="_blank">SSD-Caffe</a> is needed):
 
 1. Download <a href="http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/" target="_blank">WIDER</a> and <a href="http://vis-www.cs.umass.edu/fddb/" target="_blank">FDDB</a> datasets.

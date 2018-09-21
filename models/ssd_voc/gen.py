@@ -761,6 +761,8 @@ layer {
              self.ssd_loss()
           elif stage == "deploy":
              self.ssd_predict()
+          elif stage == "deploy_bn":
+             self.ssd_predict()
           else:
              self.ssd_test()
       else:
@@ -782,7 +784,7 @@ if __name__ == '__main__':
       '-s','--stage',
       type=str,
       default='train',
-      help='The stage of prototxt, train|test|deploy.'
+      help='The stage of prototxt, train|test|deploy|deploy_bn.'
   )
   parser.add_argument(
       '-d','--lmdb',

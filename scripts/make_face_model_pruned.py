@@ -5,7 +5,7 @@ import numpy as np
 from collections import OrderedDict
 from matplotlib import pyplot as plt
 
-ref_net = caffe.Net('models/ssd_face/ssd_face_train.prototxt', 
+ref_net = caffe.Net('models/ssd_face/ssd_face_deploy_bn.prototxt', 
                     'models/ssd_face/best_bn_full.caffemodel', caffe.TRAIN)
 
 l2prevmask = OrderedDict()
@@ -53,7 +53,7 @@ for l in ref_net.params.keys():
     else:
         l2mask[l] = (np.logical_not(l2prevmask[l]), np.logical_not(l2nextmask[l]))
                
-for mode in ['train','test','deploy']:
+for mode in ['train','test','deploy','deploy_bn']:
     with open('models/ssd_face/ssd_face_'+mode+'.prototxt', 'r') as f:
         net_par = NetParameter()
         txtf.Merge(f.read(), net_par)
@@ -88,7 +88,7 @@ for mode in ['train','test','deploy']:
     with open('models/ssd_face_pruned/face_'+mode+'.prototxt', 'w') as f:
         f.write(txtf.MessageToString(newnet_par))
         
-new_net = caffe.Net('models/ssd_face_pruned/face_test.prototxt', 
+new_net = caffe.Net('models/ssd_face_pruned/face_deploy_bn.prototxt', 
                     'models/empty.caffemodel', caffe.TEST)
                     
 for l in new_net.params.keys():

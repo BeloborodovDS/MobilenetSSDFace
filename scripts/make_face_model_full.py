@@ -1,9 +1,9 @@
 import caffe
 
-ref_net = caffe.Net('models/ssd_voc/train.prototxt', 
+ref_net = caffe.Net('models/ssd_voc/deploy_bn.prototxt', 
                     'models/ssd_voc/mobilenet_iter_73000.caffemodel', 
                     caffe.TRAIN)
-new_net = caffe.Net('models/ssd_face/ssd_face_train.prototxt', 
+new_net = caffe.Net('models/ssd_face/ssd_face_deploy_bn.prototxt', 
                     'models/empty.caffemodel', 
                     caffe.TRAIN)
 for pn,blobs in new_net.params.items():

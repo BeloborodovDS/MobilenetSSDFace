@@ -23,14 +23,14 @@ compile_initial:
 	cd ../..
 profile_face_full:
 	mkdir -p models/tmp && \
-	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt models/ssd_face/best_bn_full.caffemodel \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_deploy_bn.prototxt models/ssd_face/best_bn_full.caffemodel \
 	models/ssd_face/ssd_face_deploy.prototxt models/tmp/test.caffemodel && \
 	cd models/tmp; \
 	mvNCProfile ../ssd_face/ssd_face_deploy.prototxt -w ./test.caffemodel -s 12; \
 	cd ../..
 profile_short_init:
 	mkdir -p models/tmp && \
-	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt models/ssd_face_pruned/short_init.caffemodel \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_deploy_bn.prototxt models/ssd_face_pruned/short_init.caffemodel \
 	models/ssd_face_pruned/face_deploy.prototxt models/tmp/test.caffemodel && \
 	cd models/tmp; \
 	mvNCProfile ../ssd_face_pruned/face_deploy.prototxt -w ./test.caffemodel -s 12; \
@@ -124,6 +124,9 @@ gen_templates:
 	> models/ssd_face/ssd_face_test.prototxt; \
 	python3 ./models/ssd_voc/gen.py --stage=deploy --class-num=2 \
 	> models/ssd_face/ssd_face_deploy.prototxt; \
+	python3 ./models/ssd_voc/gen.py --stage=deploy_bn --class-num=2 \
+	> models/ssd_face/ssd_face_deploy_bn.prototxt
+check_templates:
 	python3 ./scripts/check_proto.py
 face_model_full: gen_templates
 	python3 ./scripts/make_face_model_full.py
@@ -167,15 +170,17 @@ test_short_init:
 # DEPLOY models
 deploy_full:
 	mkdir -p models/deploy && \
-	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_train.prototxt models/ssd_face/best_bn_full.caffemodel \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face/ssd_face_deploy_bn.prototxt models/ssd_face/best_bn_full.caffemodel \
 	models/ssd_face/ssd_face_deploy.prototxt models/deploy/ssd-face.caffemodel && \
-	cp -u -v models/ssd_face/ssd_face_deploy.prototxt models/deploy/ssd-face.prototxt && \
+	cp -u -v models/ssd_face/ssd_face_deploy.prototxt models/deploy/ssd-face.prototxt
+compile_full: deploy_full
 	cd models/deploy && mvNCCompile ssd-face.prototxt -w ssd-face.caffemodel -s 12 -o ssd-face.graph && cd ../..
 deploy_short:
 	mkdir -p models/deploy && \
-	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_train.prototxt models/ssd_face_pruned/short_init.caffemodel \
+	python3 models/ssd_voc/merge_bn.py models/ssd_face_pruned/face_deploy_bn.prototxt models/ssd_face_pruned/short_init.caffemodel \
 	models/ssd_face_pruned/face_deploy.prototxt models/deploy/ssd-face-longrange.caffemodel && \
-	cp -u -v models/ssd_face_pruned/face_deploy.prototxt models/deploy/ssd-face-longrange.prototxt && \
+	cp -u -v models/ssd_face_pruned/face_deploy.prototxt models/deploy/ssd-face-longrange.prototxt
+compile_short: deploy_short
 	cd models/deploy && \
 	mvNCCompile ssd-face-longrange.prototxt -w ssd-face-longrange.caffemodel -s 12 -o ssd-face-longrange.graph \
 	&& cd ../..
